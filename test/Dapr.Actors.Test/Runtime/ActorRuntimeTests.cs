@@ -1,4 +1,4 @@
-// ------------------------------------------------------------------------
+﻿// ------------------------------------------------------------------------
 // Copyright 2021 The Dapr Authors
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,19 @@ namespace Dapr.Actors.Test
 
         private interface ITestActor : IActor
         {
+        }
+
+        [Fact]
+        public void TestRegisterActorByType()
+        {
+            var actorType = typeof(TestActor);
+
+            var options = new ActorRuntimeOptions();
+            options.Actors.RegisterActor(typeof(TestActor), null, null);
+            var runtime = new ActorRuntime(options, loggerFactory, activatorFactory, proxyFactory);
+
+            Assert.Contains(actorType.Name, runtime.RegisteredActors.Select(a => a.Type.ActorTypeName), StringComparer.InvariantCulture);
+            Assert.Throws<ArgumentException>(() => options.Actors.RegisterActor(typeof(FakeActor), null, null));
         }
 
         [Fact]
@@ -316,6 +329,10 @@ namespace Dapr.Actors.Test
             Assert.Equal(32, element.GetInt32());
         }
 
+        private sealed class FakeActor 
+        { 
+        }
+        
         private sealed class TestActor : Actor, ITestActor
         {
             public TestActor(ActorHost host)

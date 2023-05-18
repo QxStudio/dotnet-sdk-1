@@ -1,4 +1,4 @@
-// ------------------------------------------------------------------------
+﻿// ------------------------------------------------------------------------
 // Copyright 2021 The Dapr Authors
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,7 +78,26 @@ namespace Dapr.Actors.Runtime
         public void RegisterActor<TActor>(string actorTypeName, ActorRuntimeOptions typeOptions, Action<ActorRegistration> configure = null)
             where TActor : Actor
         {
-            var actorTypeInfo = ActorTypeInformation.Get(typeof(TActor), actorTypeName);
+            RegisterActor(typeof(TActor), actorTypeName, typeOptions, configure);
+        }
+
+
+        /// <summary>
+        /// Registers an actor type in the collection.
+        /// </summary>
+        /// <param name="actorType">Type of actor.</param>
+        /// <param name="actorTypeName">The name of the actor type represented by the actor.</param>
+        /// <param name="typeOptions">An optional <see cref="ActorRuntimeOptions"/> that defines values for this type alone.</param>
+        /// <param name="configure">An optional delegate used to configure the actor registration.</param>
+        /// <remarks>The value of <paramref name="actorTypeName"/> will have precedence over the default actor type name derived from the actor implementation type or any type name set via <see cref="ActorAttribute"/>.</remarks>
+        /// <exception cref="ArgumentException">The specified actorType is not a subclass of Actor.</exception>
+        public void RegisterActor(Type actorType, string actorTypeName, ActorRuntimeOptions typeOptions, Action<ActorRegistration> configure = null)
+        {
+            if (!actorType.IsSubclassOf(typeof(Actor)))
+            { 
+                throw new ArgumentException("ActorType must be a subclass of Actor.", nameof(actorType));
+            }
+            var actorTypeInfo = ActorTypeInformation.Get(actorType, actorTypeName);
             var registration = new ActorRegistration(actorTypeInfo, typeOptions);
             configure?.Invoke(registration);
             this.Add(registration);
